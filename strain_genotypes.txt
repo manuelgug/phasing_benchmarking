@@ -1,0 +1,9 @@
+  Strain Full_Genotype    
+1 D10    NCSAK        
+2 D6     NCSAK        
+3 FCR3   NCTAK        
+4 HB3    NCNAK        
+5 U659   IRNGE        
+6 V1S    IRNGK        
+7 W2     IRNGK 
+8 DD2	 IRNGK 
