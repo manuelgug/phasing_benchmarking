@@ -285,7 +285,6 @@ biallele_freq
 
 # translate encodings into actual genotypes, use inf_freq
 markers_code <- read.csv("FEMcoded_CODE_combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv")
-markers_code
 inf_freq
 
 #dimensions
@@ -303,3 +302,34 @@ for (i in 1:length(col_names)) {
 df_genotypes_binary <- data.frame(matrix_data)
 colnames(df_genotypes_binary) <- markers_order
 
+t(df_genotypes_binary)
+
+
+#account for >biallelic loci AQUÍ VOY. NECESITO MODIFICAR LOS AA's POR LOS 1'S Y 0'S EN df_genotypes_binary PERO EN UN NUEVO DF PARA SABER LA EQUIVALENCIA. LUEGO CONVERTIR EN COLNAMES DE inf_freq Y FORMATEAR A UN DF FINAL
+code_results_list <- list()
+
+for (i in markers_order) {
+  subset <- markers_code[markers_code$resmarker == i,]
+  
+  if (sum(subset$FEMcoded == 0) > 1) {
+    AA_new <- paste(subset$AA[subset$FEMcoded == 0], collapse = "_")
+    mean_freq <- paste(subset$mean_freq[subset$FEMcoded == 0], collapse = "_")
+    
+    new_line <- as.data.frame(t(c(i, AA_new, mean_freq, 0)))
+    colnames(new_line) <- colnames(subset)
+    subset <- subset[!subset$FEMcoded == 0,]
+    subset <- rbind(subset, new_line)
+    
+    print(subset)
+  } else {
+    print(subset)
+  }
+  
+  # Add the subset to the list
+  code_results_list[[i]] <- subset
+}
+
+# Concatenate all data frames in the list into a single data frame
+code_results <- do.call(rbind, code_results_list) # LISTO EL CÓDIGO!!
+rownames(code_results)<-NULL
+       
