@@ -1,6 +1,6 @@
 library(FreqEstimationModel)
 library(dplyr)
-
+library(reshape2)
 
 #load data
 control_data <- read.csv('FEMcoded_combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv', row.names = 1) # Load data 
@@ -301,13 +301,12 @@ for (i in 1:length(col_names)) {
   matrix_data[i, ] <- as.numeric(strsplit(col_names[i], NULL)[[1]])
 }
 
+#binary codes
 df_genotypes_binary <- data.frame(matrix_data)
 colnames(df_genotypes_binary) <- markers_order
 
-t(df_genotypes_binary)
 
-
-#account for >biallelic loci AQUÍ VOY. NECESITO MODIFICAR LOS AA's POR LOS 1'S Y 0'S EN df_genotypes_binary PERO EN UN NUEVO DF PARA SABER LA EQUIVALENCIA. LUEGO CONVERTIR EN COLNAMES DE inf_freq Y FORMATEAR A UN DF FINAL
+#account for multillelic loci 
 code_results_list <- list()
 
 for (i in markers_order) {
@@ -315,6 +314,7 @@ for (i in markers_order) {
   
   if (sum(subset$FEMcoded == 0) > 1) {
     AA_new <- paste(subset$AA[subset$FEMcoded == 0], collapse = "_")
+    AA_new <- paste0("[", AA_new, "]")
     mean_freq <- paste(subset$mean_freq[subset$FEMcoded == 0], collapse = "_")
     
     new_line <- as.data.frame(t(c(i, AA_new, mean_freq, 0)))
@@ -335,7 +335,9 @@ for (i in markers_order) {
 code_results <- do.call(rbind, code_results_list) # LISTO EL CÓDIGO!!
 rownames(code_results)<-NULL
 
+
 #decode binary code to genotype
+df_genotypes_binary_ <- df_genotypes_binary
 # Iterate over rows in code_results
 for (i in 1:nrow(code_results)) {
   resmarker <- code_results$resmarker[i]
@@ -349,7 +351,21 @@ for (i in 1:nrow(code_results)) {
   df_genotypes_binary_[, col_index] <- ifelse(df_genotypes_binary_[, col_index] == FEMcoded, AA, df_genotypes_binary_[, col_index])
 }
 
-df_genotypes_binary_
+#concat genotypes and binary code
+genos <- apply(df_genotypes_binary_, 1, function(row) paste(row, collapse = "_"))
+FEMcode <- apply(df_genotypes_binary, 1, function(row) paste(row, collapse = ""))
+
+FINAL_DECODED_GENOTYPES <- as.data.frame(cbind(genotypes=genos, FEMcode=as.numeric(FEMcode)))
 
 
-inf_freq
+# Melt the data frame
+melted_inf_freq <- melt(as.matrix(inf_freq))
+colnames(melted_inf_freq) <- c("SampleID", "genotype", "freq")
+
+melted_inf_freq <- melted_inf_freq %>%
+  arrange(SampleID) %>%
+  filter(freq != 0)
+
+melted_inf_freq
+
+FINAL_DECODED_GENOTYPES
