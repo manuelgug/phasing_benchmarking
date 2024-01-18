@@ -284,6 +284,7 @@ inf_prev
 biallele_freq
 
 
+################################################################################################
 # translate encodings into actual genotypes, use inf_freq
 markers_code <- read.csv("FEMcoded_CODE_combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv")
 inf_freq
@@ -334,4 +335,21 @@ for (i in markers_order) {
 code_results <- do.call(rbind, code_results_list) # LISTO EL CÓDIGO!!
 rownames(code_results)<-NULL
 
-code_results
+#decode binary code to genotype
+# Iterate over rows in code_results
+for (i in 1:nrow(code_results)) {
+  resmarker <- code_results$resmarker[i]
+  AA <- code_results$AA[i]
+  FEMcoded <- code_results$FEMcoded[i]
+  
+  # Find corresponding column in df_genotypes_binary
+  col_index <- which(colnames(df_genotypes_binary_) == resmarker)
+  
+  # Replace values in df_genotypes_binary based on FEMcoded
+  df_genotypes_binary_[, col_index] <- ifelse(df_genotypes_binary_[, col_index] == FEMcoded, AA, df_genotypes_binary_[, col_index])
+}
+
+df_genotypes_binary_
+
+
+inf_freq
