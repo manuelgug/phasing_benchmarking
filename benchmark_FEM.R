@@ -361,9 +361,13 @@ FINAL_DECODED_GENOTYPES <- as.data.frame(cbind(genotypes=genos, FEMcode=as.numer
 melted_inf_freq <- melt(as.matrix(inf_freq))
 colnames(melted_inf_freq) <- c("SampleID", "FEMcode", "freq")
 
+melted_inf_prob <- melt(as.matrix(inf_As)) #keep only most likely haplos
+
+melted_inf_freq$value <- melted_inf_prob$value
+
 melted_inf_freq <- melted_inf_freq %>%
   arrange(SampleID) %>%
-  filter(freq != 0)
+  filter(value != 0)
 
 #decode
 merged_data <- merge(melted_inf_freq, FINAL_DECODED_GENOTYPES, by = "FEMcode", all.x = TRUE)
