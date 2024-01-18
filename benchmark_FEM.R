@@ -372,4 +372,4 @@ FINAL_merged_data <- merged_data %>%
   arrange(SampleID) %>%
   select("SampleID", "genotypes", "freq")
 
-write.csv(FINAL_merged_data, "phased_haplotypes_FEM.csv")
+write.csv(FINAL_merged_data, "controls_phased_haplotypes_FEM.csv", row.names = F)
