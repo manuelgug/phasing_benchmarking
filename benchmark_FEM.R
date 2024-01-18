@@ -354,18 +354,22 @@ for (i in 1:nrow(code_results)) {
 #concat genotypes and binary code
 genos <- apply(df_genotypes_binary_, 1, function(row) paste(row, collapse = "_"))
 FEMcode <- apply(df_genotypes_binary, 1, function(row) paste(row, collapse = ""))
-
 FINAL_DECODED_GENOTYPES <- as.data.frame(cbind(genotypes=genos, FEMcode=as.numeric(FEMcode)))
 
 
 # Melt the data frame
 melted_inf_freq <- melt(as.matrix(inf_freq))
-colnames(melted_inf_freq) <- c("SampleID", "genotype", "freq")
+colnames(melted_inf_freq) <- c("SampleID", "FEMcode", "freq")
 
 melted_inf_freq <- melted_inf_freq %>%
   arrange(SampleID) %>%
   filter(freq != 0)
 
-melted_inf_freq
+#decode
+merged_data <- merge(melted_inf_freq, FINAL_DECODED_GENOTYPES, by = "FEMcode", all.x = TRUE)
 
-FINAL_DECODED_GENOTYPES
+FINAL_merged_data <- merged_data %>%
+  arrange(SampleID) %>%
+  select("SampleID", "genotypes", "freq")
+
+write.csv(FINAL_merged_data, "phased_haplotypes_FEM.csv")
