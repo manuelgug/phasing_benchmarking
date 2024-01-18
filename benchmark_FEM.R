@@ -1,4 +1,5 @@
 library(FreqEstimationModel)
+library(dplyr)
 
 
 #load data
@@ -332,4 +333,5 @@ for (i in markers_order) {
 # Concatenate all data frames in the list into a single data frame
 code_results <- do.call(rbind, code_results_list) # LISTO EL CÓDIGO!!
 rownames(code_results)<-NULL
-       
+
+code_results
