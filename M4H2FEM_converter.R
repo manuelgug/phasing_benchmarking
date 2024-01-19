@@ -5,7 +5,9 @@
 library(dplyr)
 library(tidyr)
 
-resmarkers_table <- read.csv("combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv")
+file <- c("CONTROLS_ALL.csv")
+
+resmarkers_table <- read.csv(file)
 
 #####################################################################3
 #subset relevant markers
@@ -62,5 +64,5 @@ formatted_table$SampleID <- NULL
 formatted_table <- formatted_table %>%
   select(markers_to_phase)
 
-write.csv(formatted_table, file = "FEMcoded_combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv")
-write.csv(mean_allele_freq, file = "FEMcoded_CODE_combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv", row.names = F)
+write.csv(formatted_table, file = paste0("FEMcoded_", file))
+write.csv(mean_allele_freq, file = paste0("FEMcoded_CODE_", file), row.names = F)
