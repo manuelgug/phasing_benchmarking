@@ -2,12 +2,17 @@ library(FreqEstimationModel)
 library(dplyr)
 library(reshape2)
 
+file <- c("FEMcoded_CONTROLS_ALL.csv")
+
 #load data
-control_data <- read.csv('FEMcoded_combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv', row.names = 1) # Load data 
+control_data <- read.csv(file, row.names = 1) # Load data 
 control_data
 #colnames(control_data) <- paste0("locus_", colnames(control_data))
 
 control_data <- mutate_all(control_data, as.numeric)
+
+#remove rows with NAs
+control_data <- control_data[complete.cases(control_data), ]
 
 control_data_list<-c()
 control_data_list$Data <- control_data
@@ -286,7 +291,7 @@ biallele_freq
 
 ################################################################################################
 # translate encodings into actual genotypes, use inf_freq
-markers_code <- read.csv("FEMcoded_CODE_combined_mixture_controls_resmarker_table_16_17_21_22_27_manuel.csv")
+markers_code <- read.csv("FEMcoded_CODE_CONTROLS_ALL.csv")
 inf_freq
 
 #dimensions
@@ -376,4 +381,4 @@ FINAL_merged_data <- merged_data %>%
   arrange(SampleID) %>%
   select("SampleID", "genotypes", "freq")
 
-write.csv(FINAL_merged_data, "controls_phased_haplotypes_FEM.csv", row.names = F)
+write.csv(FINAL_merged_data, "controls_phased_haplotypes_FEM_ALL_CONTROLS.csv", row.names = F)
