@@ -5,15 +5,16 @@ expected <- readxl::read_xlsx("controls_EXPECTED.xlsx")
 FEM <- read.csv("controls_phased_haplotypes_FEM.csv")
 colnames(FEM)<- c("SampleID", "genotypes_FEM", "freq_FEM")
 
-FAPR <- read.csv("controls_fapr_phased_haplos.csv")
+FAPR <- read.csv("controls_fapr_phased_haplos_correct_only.csv")
 FAPR <- FAPR[,c("SampleID", "haplotype", "HAPLO_FREQ_RECALC")]
 colnames(FAPR)<- c("SampleID", "genotypes_FAPR", "freq_FAPR")
 
 
-#merged_table <- merge(merge(expected, FEM, by = "SampleID", all.x = TRUE), FAPR, by = "SampleID", all.x = TRUE)
+# COMPARE PREENCE OF HAPLOS
+# remove monoclonal samples from all dfs first NOT DONE YET
 
-#compare presence of haplos 
-result <- c()
+result_FAPR <- c()
+result_FEM <- c()
 
 for (sample in expected$SampleID){
   
@@ -22,9 +23,16 @@ for (sample in expected$SampleID){
   FEM_chunk <- FEM[FEM$SampleID == sample,]
   FAPR_chunk <- FAPR[FAPR$SampleID == sample,]
   
-  ok <- FAPR_chunk$genotypes %in% expected_chunk$genotypes
-  result <- c(ok, result)
+  ok1 <- FAPR_chunk$genotypes %in% expected_chunk$genotypes # what haplos from FAPR are present in expected, per sample?
+  ok2 <- FEM_chunk$genotypes %in% expected_chunk$genotypes
+  
+  result_FAPR <- c(ok1, result_FAPR)
+  result_FEM <- c(ok2, result_FEM)
+  
 }
 
-print(sum(result) / length(expected$genotypes))
+print(sum(result_FAPR == TRUE)) # TP
+print(sum(result_FAPR == FALSE)) # FP
 
+print(sum(result_FEM == FALSE)) # FP
+print(sum(result_FEM == TRUE)) # TP
