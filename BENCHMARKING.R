@@ -24,27 +24,27 @@ cat("There are", length(unique(FEM_mixes$SampleID)), "mixes picked by FEM")
 
 
 # COMPARE PRESENCE OF HAPLOS
-result_FAPR <- c()
-result_FEM <- c()
+result_TP_FP_FAPR <- c()
+result_TP_FP_FEM <- c()
 
-for (sample in expected$SampleID){
+for (sample in expected_mixes$SampleID){
   
   expected_chunk <- expected_mixes[expected_mixes$SampleID == sample,]
     
   FEM_chunk <- FEM_mixes[FEM_mixes$SampleID == sample,]
   FAPR_chunk <- FAPR_mixes[FAPR_mixes$SampleID == sample,]
   
-  ok1 <- FAPR_chunk$genotypes %in% expected_chunk$genotypes # what haplos from FAPR are present in expected, per sample?
-  ok2 <- FEM_chunk$genotypes %in% expected_chunk$genotypes
+  TP_FP_fapr <- FAPR_chunk$genotypes_FAPR %in% expected_chunk$genotypes # what haplos from FAPR are present in expected, per sample?
+  TP_FP_fem <- FEM_chunk$genotypes_FEM %in% expected_chunk$genotypes
   
-  result_FAPR <- c(ok1, result_FAPR)
-  result_FEM <- c(ok2, result_FEM)
+  result_TP_FP_FAPR <- c(result_TP_FP_FAPR, TP_FP_fapr)
+  result_TP_FP_FEM <- c(result_TP_FP_FEM, TP_FP_fem)
   
 }
 
-print(sum(result_FAPR == TRUE)) # TP
-print(sum(result_FAPR == FALSE)) # FP
+print(sum(result_TP_FP_FAPR == TRUE)) # TP
+print(sum(result_TP_FP_FAPR == FALSE)) # FP
 
-print(sum(result_FEM == TRUE)) # TP
-print(sum(result_FEM == FALSE)) # FP
+print(sum(result_TP_FP_FEM == TRUE)) # TP
+print(sum(result_TP_FP_FEM == FALSE)) # FP
 
