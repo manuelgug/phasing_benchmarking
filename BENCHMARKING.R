@@ -41,9 +41,8 @@ for (row in 1:length(FEM$SampleID)){
 
 FEM <- ok
 
-
 ### FAPR
-FAPR <- read.csv("controls_fapr_phased_haplos_correct_only.csv") #correct only o all? probar ambas
+FAPR <- read.csv("controls_fapr_phased_haplos.csv") #correct only o all? probar ambas
 FAPR <- FAPR[,c("SampleID", "haplotype", "HAPLO_FREQ_RECALC")]
 colnames(FAPR)<- c("SampleID", "genotypes_FAPR", "freq_FAPR")
 
@@ -73,15 +72,27 @@ for (sample in expected_mixes$SampleID){
     
   FEM_chunk <- FEM_mixes[FEM_mixes$SampleID == sample,]
   FAPR_chunk <- FAPR_mixes[FAPR_mixes$SampleID == sample,]
-  
+
+#####
+    
   TP_FP_fapr <- FAPR_chunk$genotypes_FAPR %in% expected_chunk$genotypes # what haplos from FAPR are present in expected, per sample?
+  
+  if (length(FAPR_chunk$genotypes_FAPR %in% expected_chunk$genotypes) == 0){
+    TP_FP_fapr <- rep(FALSE, length(expected_chunk$genotypes))
+  }
+  
   TP_FP_fem <- FEM_chunk$genotypes_FEM %in% expected_chunk$genotypes
   
-  print(c(sample, TP_FP_fapr))
+  if (length(FEM_chunk$genotypes_FEM %in% expected_chunk$genotypes) == 0) {
+    TP_FP_fem <- rep(FALSE, length(expected_chunk$genotypes))
+  }
+  
+  #print(c(sample, TP_FP_fapr))
   
   result_TP_FP_FAPR <- c(result_TP_FP_FAPR, TP_FP_fapr)
   result_TP_FP_FEM <- c(result_TP_FP_FEM, TP_FP_fem)
   
+#####
 }
 
 print(sum(result_TP_FP_FAPR == TRUE)) # TP
