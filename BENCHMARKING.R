@@ -68,7 +68,7 @@ cat("There are", length(unique(FEM_mixes$SampleID)), "mixes picked by FEM")
 
 result_data_FINAL<-data.frame()
 
-for (freq_threshold in seq(0,0.4, 0.05)){
+for (freq_threshold in seq(0,0.4, 0.01)){
   
   FAPR_mixes_threshold<- FAPR_mixes[FAPR_mixes$freq > freq_threshold,]
   FEM_mixes_threshold<- FEM_mixes[FEM_mixes$freq > freq_threshold,]
@@ -150,7 +150,8 @@ accuracy_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Accuracy, color = Me
   labs(title = "Comparison of Accuracy between FAPR and FEM",
        x = "MAF",
        y = "Accuracy") +
-  theme_minimal()
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 # Plot precision
 precision_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Precision, color = Method)) +
@@ -159,7 +160,8 @@ precision_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Precision, color = 
   labs(title = "Comparison of Precision between FAPR and FEM",
        x = "MAF",
        y = "Precision") +
-  theme_minimal()
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 # Plot recall
 recall_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Recall, color = Method)) +
@@ -168,7 +170,8 @@ recall_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Recall, color = Method
   labs(title = "Comparison of Recall between FAPR and FEM",
        x = "MAF",
        y = "Recall") +
-  theme_minimal()
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 # Plot F1 Score
 f1_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = F1_Score, color = Method)) +
@@ -177,6 +180,8 @@ f1_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = F1_Score, color = Method))
   labs(title = "Comparison of F1 Score between FAPR and FEM",
        x = "MAF",
        y = "F1 Score") +
-  theme_minimal()
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, ncol = 2)
+
