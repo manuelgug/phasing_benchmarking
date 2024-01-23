@@ -59,10 +59,6 @@ expected_mixes <- expected[!expected$SampleID %in% monoclonal_samples$SampleID,]
 FEM_mixes <- FEM[!FEM$SampleID %in% monoclonal_samples$SampleID,]
 FAPR_mixes <- FAPR[!FAPR$SampleID %in% monoclonal_samples$SampleID,]
 
-cat("There are", length(unique(expected_mixes$SampleID)), "expected mixes")
-cat("There are", length(unique(FAPR_mixes$SampleID)), "mixes picked by FapR")
-cat("There are", length(unique(FEM_mixes$SampleID)), "mixes picked by FEM")
-
 ############################################
   #filter out samples from FAPR (OPTIONAL, could do the same for FEM, maybe even for expected to account for lab...)
 
@@ -85,6 +81,11 @@ for (freq_threshold in seq(0,0.4, 0.01)){
   total_tp_count_FAPR <- 0
   total_fp_count_FAPR <- 0
   total_fn_count_FAPR <- 0
+  
+  expected_freq_fem_ <- NULL
+  observed_freq_fem_ <- NULL
+  expected_freq_fapr_ <- NULL
+  observed_freq_fapr_ <- NULL
   
   for (sample in unique(expected_mixes_threshold$SampleID)){
     
@@ -116,15 +117,36 @@ for (freq_threshold in seq(0,0.4, 0.01)){
     total_tp_count_FEM <- total_tp_count_FEM + tp_count_FEM
     total_fp_count_FEM <- total_fp_count_FEM + fp_count_FEM
     total_fn_count_FEM <- total_fn_count_FEM + fn_count_FEM
+    
+    # calculate difference in frequency from true positives
+    if (length(common_genotypes_FAPR) > 0){
+      expected_freq_fapr <- expected_chunk[common_genotypes_FAPR == expected_chunk$genotypes,]$freq
+      expected_freq_fapr_ <- c(expected_freq_fapr_, expected_freq_fapr)
+      observed_freq_fapr <- FAPR_chunk[common_genotypes_FAPR == FAPR_chunk$genotypes,]$freq
+      observed_freq_fapr_ <- c(observed_freq_fapr_, observed_freq_fapr)
+    }
+    
+    if (length(common_genotypes_FEM) > 0){
+      expected_freq_fem <- expected_chunk[common_genotypes_FEM == expected_chunk$genotypes,]$freq
+      expected_freq_fem_ <-  c(expected_freq_fem_, expected_freq_fem)
+      observed_freq_fem <- FEM_chunk[common_genotypes_FEM == FEM_chunk$genotypes,]$freq
+      observed_freq_fem_ <- c(observed_freq_fem_, observed_freq_fem)
+    }
+    
   }
+  
+  #root mean square error
+  rmse_FAPR <- sqrt(mean((expected_freq_fapr_ - observed_freq_fapr_)^2)) 
+  rmse_FEM <- sqrt(mean((expected_freq_fem_ - observed_freq_fem_)^2))
   
   # Create a final table
   result_data <- data.frame(
-    Method = c("FEM", "FAPR"),
+    Method = c("FEM", "FapR"),
     TP = c(total_tp_count_FEM, total_tp_count_FAPR),
     FP = c(total_fp_count_FEM, total_fp_count_FAPR),
     FN = c(total_fn_count_FEM, total_fn_count_FAPR),
-    MAF = freq_threshold
+    MAF = freq_threshold,
+    RMSE = c(rmse_FEM, rmse_FAPR)
   )
   
   # Calculate metrics
@@ -147,41 +169,56 @@ result_data_FINAL$MAF <- factor(result_data_FINAL$MAF)
 accuracy_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Accuracy, color = Method)) +
   geom_point() +
   geom_line(aes(group = Method)) +
-  labs(title = "Comparison of Accuracy between FAPR and FEM",
+  labs(title = "Accuracy",
        x = "MAF",
        y = "Accuracy") +
   theme_minimal()+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0, 1)
 
 # Plot precision
 precision_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Precision, color = Method)) +
   geom_point() +
   geom_line(aes(group = Method)) +
-  labs(title = "Comparison of Precision between FAPR and FEM",
+  labs(title = "Precision",
        x = "MAF",
        y = "Precision") +
   theme_minimal()+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0, 1)
 
 # Plot recall
 recall_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = Recall, color = Method)) +
   geom_point() +
   geom_line(aes(group = Method)) +
-  labs(title = "Comparison of Recall between FAPR and FEM",
+  labs(title = "Recall",
        x = "MAF",
        y = "Recall") +
   theme_minimal()+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0, 1)
 
 # Plot F1 Score
 f1_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = F1_Score, color = Method)) +
   geom_point() +
   geom_line(aes(group = Method)) +
-  labs(title = "Comparison of F1 Score between FAPR and FEM",
+  labs(title = "F1 Score",
        x = "MAF",
        y = "F1 Score") +
   theme_minimal()+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0, 1)
 
-grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, ncol = 2)
+# RMSE of freq
+rmse_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = RMSE, color = Method)) +
+  geom_point() +
+  geom_line(aes(group = Method)) +
+  labs(title = "RMSE of freq",
+       x = "MAF",
+       y = "RMSE") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0, 1)
+
+grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, ncol = 3)
 
