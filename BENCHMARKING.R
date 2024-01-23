@@ -33,6 +33,7 @@ process_row <- function(row) {
 
 #loop through rows:
 ok <- c()
+
 for (row in 1:length(FEM$SampleID)){
   processed_rows <- process_row(FEM[row,])
   
@@ -61,12 +62,18 @@ cat("There are", length(unique(FAPR_mixes$SampleID)), "mixes picked by FapR")
 cat("There are", length(unique(FEM_mixes$SampleID)), "mixes picked by FEM")
 
 ############################################
+#filter out samples from FAPR (OPTIONAL, could do the same for FEM)
+
+freq_threshold = 0.05
+FAPR_mixes<- FAPR_mixes[FAPR_mixes$freq > freq_threshold,]
+
+############################################
 # COMPARE PRESENCE OF HAPLOS
 
 result_TP_FP_FAPR <- c()
 result_TP_FP_FEM <- c()
 
-for (sample in expected_mixes$SampleID){
+for (sample in unique(expected_mixes$SampleID)){
   
   expected_chunk <- expected_mixes[expected_mixes$SampleID == sample,]
     
@@ -75,15 +82,15 @@ for (sample in expected_mixes$SampleID){
 
 #####
     
-  TP_FP_fapr <- FAPR_chunk$genotypes_FAPR %in% expected_chunk$genotypes # what haplos from FAPR are present in expected, per sample?
+  TP_FP_fapr <-  FAPR_chunk$genotypes_FAPR %in% expected_chunk$genotypes    # what haplos from FAPR are present in expected, per sample?
   
-  if (length(FAPR_chunk$genotypes_FAPR %in% expected_chunk$genotypes) == 0){
+  if (length(TP_FP_fapr) == 0){
     TP_FP_fapr <- rep(FALSE, length(expected_chunk$genotypes))
   }
   
-  TP_FP_fem <- FEM_chunk$genotypes_FEM %in% expected_chunk$genotypes
+  TP_FP_fem <- FEM_chunk$genotypes_FEM %in% expected_chunk$genotypes 
   
-  if (length(FEM_chunk$genotypes_FEM %in% expected_chunk$genotypes) == 0) {
+  if (length(TP_FP_fem) == 0) {
     TP_FP_fem <- rep(FALSE, length(expected_chunk$genotypes))
   }
   
