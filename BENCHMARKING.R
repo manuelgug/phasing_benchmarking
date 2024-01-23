@@ -133,6 +133,10 @@ for (freq_threshold in seq(0,0.4, 0.01)){ #(freq_threshold in seq(0,0.4, 0.01))
   #root mean square error
   rmse_FAPR <- sqrt(mean((merged_fapr_$freq - merged_fapr_$freq_FAPR)^2)) 
   rmse_FEM <- sqrt(mean((merged_fem_$freq - merged_fem_$freq_FEM)^2)) 
+  
+  # Calculate MAPE (mean average percentage error; takes into account sample size)
+  mape_FAPR <- mean(abs((merged_fapr_$freq - merged_fapr_$freq_FAPR) / merged_fapr_$freq_FAPR) * 100, na.rm = TRUE)
+  mape_FEM <- mean(abs((merged_fem_$freq - merged_fem_$freq_FEM) / merged_fem_$freq_FEM) * 100, na.rm = TRUE)
   ###################################################################
   
   # Create a final table
@@ -142,7 +146,8 @@ for (freq_threshold in seq(0,0.4, 0.01)){ #(freq_threshold in seq(0,0.4, 0.01))
     FP = c(total_fp_count_FEM, total_fp_count_FAPR),
     FN = c(total_fn_count_FEM, total_fn_count_FAPR),
     MAF = freq_threshold,
-    RMSE = c(rmse_FEM, rmse_FAPR)
+    RMSE = c(rmse_FEM, rmse_FAPR),
+    MAPE = c(mape_FEM, mape_FAPR)
   )
   
   # Calculate metrics
@@ -216,5 +221,15 @@ rmse_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = RMSE, color = Method)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   ylim(0, 1)
 
-grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, ncol = 3)
+# RMSE of freq
+mape_plot <- ggplot(result_data_FINAL, aes(x = MAF, y = MAPE, color = Method)) +
+  geom_point() +
+  geom_line(aes(group = Method)) +
+  labs(title = "MAPE of freq",
+       x = "MAF",
+       y = "RMSE") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, mape_plot, ncol = 3)
 
