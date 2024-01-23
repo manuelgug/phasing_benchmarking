@@ -62,50 +62,66 @@ cat("There are", length(unique(FAPR_mixes$SampleID)), "mixes picked by FapR")
 cat("There are", length(unique(FEM_mixes$SampleID)), "mixes picked by FEM")
 
 ############################################
-#filter out samples from FAPR (OPTIONAL, could do the same for FEM)
+#filter out samples from FAPR (OPTIONAL, could do the same for FEM, maybe even for expected to account for lab...)
 
-freq_threshold = 0.05
+freq_threshold = 0.1
 FAPR_mixes<- FAPR_mixes[FAPR_mixes$freq > freq_threshold,]
+FEM_mixes<- FEM_mixes[FEM_mixes$freq > freq_threshold,]
+expected_mixes<- expected_mixes[expected_mixes$freq > freq_threshold,]
 
 ############################################
 # COMPARE PRESENCE OF HAPLOS
 
-result_TP_FP_FAPR <- c()
-result_TP_FP_FEM <- c()
+# Initialize counters
+total_tp_count_FEM <- 0
+total_fp_count_FEM <- 0
+total_fn_count_FEM <- 0
+
+total_tp_count_FAPR <- 0
+total_fp_count_FAPR <- 0
+total_fn_count_FAPR <- 0
 
 for (sample in unique(expected_mixes$SampleID)){
   
   expected_chunk <- expected_mixes[expected_mixes$SampleID == sample,]
-    
+  
   FEM_chunk <- FEM_mixes[FEM_mixes$SampleID == sample,]
   FAPR_chunk <- FAPR_mixes[FAPR_mixes$SampleID == sample,]
-
-#####
-    
-  TP_FP_fapr <-  FAPR_chunk$genotypes_FAPR %in% expected_chunk$genotypes    # what haplos from FAPR are present in expected, per sample?
   
-  if (length(TP_FP_fapr) == 0){
-    TP_FP_fapr <- rep(FALSE, length(expected_chunk$genotypes))
-  }
+  # Find common genotypes between FAPR and expected
+  common_genotypes_FAPR <- intersect(FAPR_chunk$genotypes, expected_chunk$genotypes)
   
-  TP_FP_fem <- FEM_chunk$genotypes_FEM %in% expected_chunk$genotypes 
+  tp_count_FAPR <- sum(common_genotypes_FAPR %in% expected_chunk$genotypes)
+  fp_count_FAPR <- sum(!FAPR_chunk$genotypes %in% expected_chunk$genotypes)
+  fn_count_FAPR <- sum(!expected_chunk$genotypes %in% common_genotypes_FAPR)
   
-  if (length(TP_FP_fem) == 0) {
-    TP_FP_fem <- rep(FALSE, length(expected_chunk$genotypes))
-  }
+  # Update total counts for FAPR
+  total_tp_count_FAPR <- total_tp_count_FAPR + tp_count_FAPR
+  total_fp_count_FAPR <- total_fp_count_FAPR + fp_count_FAPR
+  total_fn_count_FAPR <- total_fn_count_FAPR + fn_count_FAPR
   
-  #print(c(sample, TP_FP_fapr))
+  # Find common genotypes between FEM and expected
+  common_genotypes_FEM <- intersect(FEM_chunk$genotypes, expected_chunk$genotypes)
   
-  result_TP_FP_FAPR <- c(result_TP_FP_FAPR, TP_FP_fapr)
-  result_TP_FP_FEM <- c(result_TP_FP_FEM, TP_FP_fem)
+  tp_count_FEM <- sum(common_genotypes_FEM %in% expected_chunk$genotypes)
+  fp_count_FEM <- sum(!FEM_chunk$genotypes %in% expected_chunk$genotypes)
+  fn_count_FEM <- sum(!expected_chunk$genotypes %in% common_genotypes_FEM)
   
-#####
+  # Update total counts for FEM
+  total_tp_count_FEM <- total_tp_count_FEM + tp_count_FEM
+  total_fp_count_FEM <- total_fp_count_FEM + fp_count_FEM
+  total_fn_count_FEM <- total_fn_count_FEM + fn_count_FEM
 }
 
-print(sum(result_TP_FP_FAPR == TRUE)) # TP
-print(sum(result_TP_FP_FAPR == FALSE)) # FP
+# Create a final table
+final_table <- data.frame(
+  Method = c("FEM", "FAPR"),
+  TP = c(total_tp_count_FEM, total_tp_count_FAPR),
+  FP = c(total_fp_count_FEM, total_fp_count_FAPR),
+  FN = c(total_fn_count_FEM, total_fn_count_FAPR)
+)
 
-print(sum(result_TP_FP_FEM == TRUE)) # TP
-print(sum(result_TP_FP_FEM == FALSE)) # FP
+# Print or use the final_table as needed
+print(final_table)
 
-length(expected_mixes$SampleID)
+
