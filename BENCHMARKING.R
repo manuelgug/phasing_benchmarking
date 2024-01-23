@@ -64,7 +64,7 @@ FAPR_mixes <- FAPR[!FAPR$SampleID %in% monoclonal_samples$SampleID,]
 
 result_data_FINAL<-data.frame()
 
-for (freq_threshold in seq(0,0.4, 0.01)){
+for (freq_threshold in seq(0,0.4, 0.01)){ #(freq_threshold in seq(0,0.4, 0.01))
   
   FAPR_mixes_threshold<- FAPR_mixes[FAPR_mixes$freq > freq_threshold,]
   FEM_mixes_threshold<- FEM_mixes[FEM_mixes$freq > freq_threshold,]
@@ -81,13 +81,11 @@ for (freq_threshold in seq(0,0.4, 0.01)){
   total_tp_count_FAPR <- 0
   total_fp_count_FAPR <- 0
   total_fn_count_FAPR <- 0
+
+  merged_fapr_ <- data.frame()
+  merged_fem_ <- data.frame()
   
-  expected_freq_fem_ <- NULL
-  observed_freq_fem_ <- NULL
-  expected_freq_fapr_ <- NULL
-  observed_freq_fapr_ <- NULL
-  
-  for (sample in unique(expected_mixes_threshold$SampleID)){
+  for (sample in unique(expected_mixes_threshold$SampleID)){ #quitar nnúmero entre []
     
     expected_chunk <- expected_mixes_threshold[expected_mixes_threshold$SampleID == sample,]
     
@@ -118,26 +116,24 @@ for (freq_threshold in seq(0,0.4, 0.01)){
     total_fp_count_FEM <- total_fp_count_FEM + fp_count_FEM
     total_fn_count_FEM <- total_fn_count_FEM + fn_count_FEM
     
+    ###################################################################
     # calculate difference in frequency from true positives
-    if (length(common_genotypes_FAPR) > 0){
-      expected_freq_fapr <- expected_chunk[common_genotypes_FAPR == expected_chunk$genotypes,]$freq
-      expected_freq_fapr_ <- c(expected_freq_fapr_, expected_freq_fapr)
-      observed_freq_fapr <- FAPR_chunk[common_genotypes_FAPR == FAPR_chunk$genotypes,]$freq
-      observed_freq_fapr_ <- c(observed_freq_fapr_, observed_freq_fapr)
+    if (tp_count_FAPR > 0){
+      merged_fapr <-merge(expected_chunk, FAPR_chunk, by.x = "genotypes", by.y = "genotypes_FAPR")
+      merged_fapr_ <- rbind(merged_fapr_, merged_fapr)
     }
     
-    if (length(common_genotypes_FEM) > 0){
-      expected_freq_fem <- expected_chunk[common_genotypes_FEM == expected_chunk$genotypes,]$freq
-      expected_freq_fem_ <-  c(expected_freq_fem_, expected_freq_fem)
-      observed_freq_fem <- FEM_chunk[common_genotypes_FEM == FEM_chunk$genotypes,]$freq
-      observed_freq_fem_ <- c(observed_freq_fem_, observed_freq_fem)
+    if (tp_count_FEM > 0){
+      merged_fem <-merge(expected_chunk, FEM_chunk, by.x = "genotypes", by.y = "genotypes_FEM")
+      merged_fem_ <- rbind(merged_fem_, merged_fem)
     }
-    
+    ###################################################################
   }
   
   #root mean square error
-  rmse_FAPR <- sqrt(mean((expected_freq_fapr_ - observed_freq_fapr_)^2)) 
-  rmse_FEM <- sqrt(mean((expected_freq_fem_ - observed_freq_fem_)^2))
+  rmse_FAPR <- sqrt(mean((merged_fapr_$freq - merged_fapr_$freq_FAPR)^2)) 
+  rmse_FEM <- sqrt(mean((merged_fem_$freq - merged_fem_$freq_FEM)^2)) 
+  ###################################################################
   
   # Create a final table
   result_data <- data.frame(
