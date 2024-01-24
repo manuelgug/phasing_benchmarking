@@ -5,10 +5,10 @@ library(gridExtra)
 # IMPORT DATA
 
 ### EXPECTED CONTROL DATA
-expected <- readxl::read_xlsx("controls_EXPECTED.xlsx")
+expected <- readxl::read_xlsx("inputs/controls_EXPECTED.xlsx")
 
 ### FEM
-FEM <- read.csv("controls_phased_haplotypes_FEM_ALL_CONTROLS.csv")
+FEM <- read.csv("run_FreqEstimationModel/controls_phased_haplotypes_FEM.csv")
 colnames(FEM)<- c("SampleID", "genotypes_FEM", "freq_FEM")
 
 # Function to process rows with brackets: because FEM can't handle multiallelic samples, I'm splitting the "all other alleles" into cloned rows with each genotype to test for accuracy
@@ -45,7 +45,7 @@ for (row in 1:length(FEM$SampleID)){
 FEM <- ok
 
 ### FAPR
-FAPR <- read.csv("controls_fapr_phased_haplos.csv") #correct only o all? probar ambas
+FAPR <- read.csv("run_FapR/controls_fapr_phased_haplos.csv")
 FAPR <- FAPR[,c("SampleID", "haplotype", "HAPLO_FREQ_RECALC")]
 colnames(FAPR)<- c("SampleID", "genotypes_FAPR", "freq_FAPR")
 
@@ -287,7 +287,7 @@ plotMetricsGrid <- function(result_data_FINAL_all_parasitaemias, plot_title, sav
 # PLOTS
 for (df in 1:length(result_data_FINAL_all_parasitaemias_separatedly)){
   
-  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]), save_plot = FALSE)
+  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]), save_plot = TRUE)
   
 }
 
