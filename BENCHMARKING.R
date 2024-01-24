@@ -197,7 +197,8 @@ result_data_FINAL_all_parasitaemias_separatedly[["ALL_parasitaemias"]] <- result
 
 ##################################################################3
 #### PLOT FUNCTION------------------------------------------------------------------
-plotMetricsGrid <- function(result_data_FINAL_all_parasitaemias, plot_title) {
+
+plotMetricsGrid <- function(result_data_FINAL_all_parasitaemias, plot_title, save_plot) {
   # Convert MAF to a factor for better plotting
   result_data_FINAL_all_parasitaemias$MAF <- factor(result_data_FINAL_all_parasitaemias$MAF)
   
@@ -266,27 +267,79 @@ plotMetricsGrid <- function(result_data_FINAL_all_parasitaemias, plot_title) {
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
-  # Create a grid
-  #grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, mape_plot, ncol = 3, top = paste("Parasitaemia =", plot_title))
-  
-  # Save the grid plot
-  ggsave(
-    paste0("benchmarking_parasitaemia", plot_title, ".png"),
-    arrangeGrob(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, mape_plot, ncol = 3, top = paste("Parasitaemia =", plot_title)),
-    width = 20, 
-    height = 12,
-    dpi = 300 
-  )
-  
+  # plot
+  if (save_plot == TRUE){
+    # Save the grid plot
+    ggsave(
+      paste0("benchmarking_parasitaemia", plot_title, ".png"),
+      arrangeGrob(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, mape_plot, ncol = 3, top = paste("Parasitaemia =", plot_title)),
+      width = 20, 
+      height = 12,
+      dpi = 300 
+    )
+  }else{
+    grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, mape_plot, ncol = 3, top = paste("Parasitaemia =", plot_title))
   }
+}
 ####----------------------------------------------------------------------------------------
 
 ###################
 # PLOTS
 for (df in 1:length(result_data_FINAL_all_parasitaemias_separatedly)){
   
-  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]))
+  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]), save_plot = FALSE)
   
 }
 
 
+#add parasitaemia column
+for (df in 1:length(result_data_FINAL_all_parasitaemias_separatedly)){
+
+  result_data_FINAL_all_parasitaemias_separatedly[[df]]$parasitaemia <- names(result_data_FINAL_all_parasitaemias_separatedly[df])
+  
+}
+
+# Filter data frames in the list for FEM and FapR
+filtered_data_FEM <- lapply(result_data_FINAL_all_parasitaemias_separatedly, function(df) df[df$Method == "FEM", ])
+filtered_data_FEM <- do.call(rbind, filtered_data_FEM)
+filtered_data_FAPR <- lapply(result_data_FINAL_all_parasitaemias_separatedly, function(df) df[df$Method == "FapR", ])
+filtered_data_FAPR <- do.call(rbind, filtered_data_FAPR)
+
+# List of metrics
+metrics <- c("Accuracy", "Precision", "Recall", "F1_Score", "RMSE", "MAPE")
+
+# Create a 6-panel figure
+fig <- grid.arrange(
+  arrangeGrob(
+    grobs = lapply(metrics, function(metric) {
+      ggplot(filtered_data_FEM, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
+        geom_point() +
+        geom_line(aes(group = interaction(Method, parasitaemia))) +
+        labs(title = metric, x = "MAF", y = metric) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+    }),
+    ncol = 3
+  ),
+  top = "FEM"
+)
+
+ggsave("benchmark_FEM_metrics_plot.png", fig, width = 20, height = 12)
+
+
+fig <- grid.arrange(
+  arrangeGrob(
+    grobs = lapply(metrics, function(metric) {
+      ggplot(filtered_data_FAPR, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
+        geom_point() +
+        geom_line(aes(group = interaction(Method, parasitaemia))) +
+        labs(title = metric, x = "MAF", y = metric) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+    }),
+    ncol = 3
+  ),
+  top = "FAPR"
+)
+
+ggsave("benchmark_FAPR_metrics_plot.png", fig, width = 20, height = 12)
