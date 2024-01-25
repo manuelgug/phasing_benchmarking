@@ -1,5 +1,6 @@
 library(ggplot2)
 library(gridExtra)
+library(dplyr)
 
 #################################################
 # IMPORT DATA
@@ -52,12 +53,39 @@ colnames(FAPR)<- c("SampleID", "genotypes_FAPR", "freq_FAPR")
 ##########################################
 # remove monoclonal samples from all dfs
 
-monoclonal_samples <- expected[expected$freq == 1,]["SampleID"]
-monoclonal_samples <- monoclonal_samples[!is.na(monoclonal_samples$SampleID),]
+biallelic_benchmark <- FALSE #PUT_BOOLEAN_HERE
 
-expected_mixes <- expected[!expected$SampleID %in% monoclonal_samples$SampleID,]
-FEM_mixes <- FEM[!FEM$SampleID %in% monoclonal_samples$SampleID,]
-FAPR_mixes <- FAPR[!FAPR$SampleID %in% monoclonal_samples$SampleID,]
+if (is.null(biallelic_benchmark)){
+  print("SPECIFY TRUE OR FALSE FOR BIALLELIC_BENCHMARK. FALSE MEANS THAT ALL POLIALLELIC LOCI ARE GOING TO BE USED")
+}
+
+if (biallelic_benchmark == TRUE){
+  
+  print("BENCHMARKING ONLY BIALLELIC SAMPLES")
+  
+  #if benchmarking only for biallelic samples, use this filter instead:
+  sample_table <- table(expected$SampleID)
+  biallelic_controls <- names(sample_table[sample_table == 2])
+  biallelic_controls <- as.data.frame(biallelic_controls)
+  
+  #if benchmarking for biallelic samples only, run the following 3 lines, else skip
+  expected_mixes <- expected[expected$SampleID %in% biallelic_controls$biallelic_controls,] 
+  FEM_mixes <- FEM[FEM$SampleID %in% biallelic_controls$biallelic_controls,]
+  FEM_mixes <- FEM_mixes %>% distinct(SampleID, freq_FEM, .keep_all = TRUE)
+  FAPR_mixes <- FAPR[FAPR$SampleID %in% biallelic_controls$biallelic_controls,]
+
+}else{ #benchmark all samples, not only biallelic ones
+  
+  print("BENCHMARKING ALL POLIALLELIC SAMPLES")
+  
+  monoclonal_samples <- expected[expected$freq == 1,]["SampleID"] 
+  
+  expected_mixes <- expected[!expected$SampleID %in% monoclonal_samples$SampleID,] 
+  FEM_mixes <- FEM[!FEM$SampleID %in% monoclonal_samples$SampleID,]
+  FAPR_mixes <- FAPR[!FAPR$SampleID %in% monoclonal_samples$SampleID,]
+  
+}
+
 
 ############################################
 ### MAIN FUNCTION-------------------------------------------------------------------
