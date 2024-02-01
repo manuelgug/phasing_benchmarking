@@ -2,22 +2,11 @@
 
 ## Overview
 
-This R script benchmarks the performance of FapR and FreqEstimationModel (FEM) for phasing haplotypes of *Plasmodium falciparum* (P. falciparum). The benchmarking process involves comparing the results of each method against expected control data, considering metrics such as accuracy, precision, recall, F1 score, root mean square error (RMSE), and mean absolute percentage error (MAPE) at different minor allele frequency (MAF) thresholds.
-
-## Requirements
-
-Make sure to install the required R packages before running the script:
-
-```R
-install.packages("ggplot2")
-install.packages("gridExtra")
-install.packages("dplyr")
-install.packages("readxl")
-```
+This R script benchmarks the performance of FapR and FreqEstimationModel for phasing haplotypes of *Plasmodium falciparum* (P. falciparum). The benchmarking process involves comparing the results of each method against expected control data, considering metrics such as accuracy, precision, recall, F1 score, root mean square error (RMSE), and mean absolute percentage error (MAPE) at different minor allele frequency (MAF) thresholds.
 
 ## Usage
 
-1. Set the correct file paths for the expected control data, FEM output, and FapR output.
+1. Set the correct file paths for the expected control data, FreqEstimationModel output, and FapR output.
 
 ```R
 expected <- readxl::read_xlsx("inputs/controls_EXPECTED.xlsx")
@@ -43,27 +32,18 @@ result_data_FINAL_all_parasitaemias <- compareMethods(FAPR_mixes, FEM_mixes, exp
 plotMetricsGrid(result_data_FINAL_all_parasitaemias, "All_Parasitaemias", save_plot = TRUE)
 ```
 
-## Additional Analysis
+## Results
 
-The script further provides additional analyses, such as separating the benchmarking results for different parasitaemias and generating individual plots. The resulting plots are saved as images for further inspection.
+The script also compares metrics between FreqEstimationModel and FapR based on parasitaemia, utilizing various minimum allele frequency (MAF) cutoffs. Accuracy, precision, recall, and F1 score assess the phasing of haplotypes (presence/absence), whereas root mean square error (RMSE) and mean absolute percentage error (MAPE) gauge the error in frequency relative to the expected values*, the later taking into account the sample size.
 
-```R
-for (df in 1:length(result_data_FINAL_all_parasitaemias_separatedly)){
-  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]), save_plot = TRUE)
-}
-```
-
-## Metrics Comparison
-
-The script also compares metrics between FEM and FapR, providing separate plots for each metric:
-
-### FEM Metrics Plot
-![FEM Metrics Plot](benchmark_FEM_metrics_plot.png)
+### Freq EstimationModel Metrics Plot
+![EstimationModel Metrics Plot](https://github.com/manuelgug/phasing_benchmarking/blob/main/results/benchmark_FEM_metrics_plot.png)
 
 ### FAPR Metrics Plot
-![FAPR Metrics Plot](benchmark_FAPR_metrics_plot.png)
+![FAPR Metrics Plot](https://github.com/manuelgug/phasing_benchmarking/blob/main/results/benchmark_FAPR_metrics_plot.png)
+
+### Overall comparison across parasitaemias
+![Overall comparison across parasitaemias](https://github.com/manuelgug/phasing_benchmarking/blob/main/results/benchmarking_parasitaemiaALL_parasitaemias.png)
 
 ## Notes
-
-- Adjust the file paths and boolean values according to your specific dataset and benchmarking preferences.
-- Ensure that the required packages are installed before running the script.
+*This refers theoretical proportions of strains in the mixes. In practice, it tends to differ.
