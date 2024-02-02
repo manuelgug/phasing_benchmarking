@@ -36,10 +36,10 @@ plotMetricsGrid(result_data_FINAL_all_parasitaemias, "All_Parasitaemias", save_p
 
 The script also compares metrics between FreqEstimationModel and FapR based on parasitaemia, utilizing various minimum allele frequency (MAF) cutoffs. Accuracy, precision, recall, and F1 score assess the phasing of haplotypes (presence/absence), whereas root mean square error (RMSE) and mean absolute percentage error (MAPE) gauge the error in frequency relative to the expected values*, the later taking into account the sample size.
 
-### Freq EstimationModel Metrics Plot
+### FreqEstimationModel Metrics Plot
 ![EstimationModel Metrics Plot](https://github.com/manuelgug/phasing_benchmarking/blob/main/results/benchmark_FEM_metrics_plot.png)
 
-### FAPR Metrics Plot
+### FapR Metrics Plot
 ![FAPR Metrics Plot](https://github.com/manuelgug/phasing_benchmarking/blob/main/results/benchmark_FAPR_metrics_plot.png)
 
 ### Overall comparison across parasitaemias
