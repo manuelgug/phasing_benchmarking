@@ -10,13 +10,13 @@ The benchmarking is done across minor allele frequency (MAF) thresholds ranging 
 
 1. Verify the accurate identification of haplotypes (presence or absence) and assess the outcomes using metrics like accuracy, precision, recall, and F1 score, derived from:
 
-   - __TP (True Positives)__: The algorithm correctly identifies a haplotype that exists in the expected data. In other words, if a phased haplotype produced by the method matches one of the expected haplotypes, it is counted as a true positive.
+   - __TP (True Positives)__: The algorithm correctly identifies a haplotype that exists in the expected data. 
   
-   - __FP (False Positives)__: The algorithm incorrectly identifies a haplotype that does not exist in the expected data. If a method produces a phased haplotype that does not match any of the expected haplotypes, it is counted as a false positive.
+   - __FP (False Positives)__: The algorithm incorrectly identifies a haplotype that does not exist in the expected data.
   
-   - __FN (False Negatives)__: The algorithm fails to identify a haplotype that actually exists in the expected data. If an expected haplotype is not identified by the method, it is counted as a false negative.
+   - __FN (False Negatives)__: The algorithm fails to identify a haplotype that actually exists in the expected data.
 
-2. Ensure the accuracy of sample frequency estimates by computing both the Root Mean Square Error (RMSE) and the Mean Absolute Percentage Error (MAPE), which considers sample size, against the expected sample frequencies.
+2. Ensure the accuracy of sample frequency estimates by computing both the Root Mean Square Error (RMSE) and the Mean Absolute Percentage Error (MAPE), which considers sample size, against the expected frequencies.
 
 
 ### Expected Dataset Description
