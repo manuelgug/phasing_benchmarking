@@ -1,8 +1,33 @@
-# FapR vs FreqEstimationModel Phasing Benchmark
+# FapR vs FreqEstimationModel Phasing Benchmarking
 
 ## Overview
 
-This R script benchmarks the performance of FapR and FreqEstimationModel for phasing haplotypes of *Plasmodium falciparum* (P. falciparum). The benchmarking process involves comparing the results of each method against expected control data, considering metrics such as accuracy, precision, recall, F1 score, root mean square error (RMSE), and mean absolute percentage error (MAPE) at different minor allele frequency (MAF) thresholds.
+This R script benchmarks the performance of [FapR](https://github.com/manuelgug/FapR) and [Aimee Taylor's FreqEstimationModel](https://github.com/aimeertaylor/FreqEstimationModel/) for phasing 7 loci across the dhfr and dhps genes of *Plasmodium falciparum*. The benchmarking process involves comparing the results of each method against expected control data.
+
+### Steps
+
+The benchmarking is done across minor allele frequency (MAF) thresholds ranging from 0 to 0.4, ivolving 2 main steps:
+
+1. Verify the accurate identification of haplotypes (presence or absence) and assess the outcomes using metrics like accuracy, precision, recall, and F1 score, derived from:
+
+   - __TP (True Positives)__: The algorithm correctly identifies a haplotype that exists in the expected data. In other words, if a phased haplotype produced by the method matches one of the expected haplotypes, it is counted as a true positive.
+  
+   - __FP (False Positives)__: The algorithm incorrectly identifies a haplotype that does not exist in the expected data. If a method produces a phased haplotype that does not match any of the expected haplotypes, it is counted as a false positive.
+  
+   - __FN (False Negatives)__: The algorithm fails to identify a haplotype that actually exists in the expected data. If an expected haplotype is not identified by the method, it is counted as a false negative.
+
+2. Ensure the accuracy of sample frequency estimates by computing both the Root Mean Square Error (RMSE) and the Mean Absolute Percentage Error (MAPE), which considers sample size, against the expected sample frequencies.
+
+
+### Expected Dataset Description
+
+The expected dataset is a 4-column Excel file containing 100 single and 95 mixed controls including `3D7`, `HB3`, `DD2`, `D10`, `D6`, `FCR3`, `U659`, `V1S` and `W2` strains with different genotypes, frequencies, and parasitaemia levels:
+
+- __SampleID__: Unique identifier for each control.
+- __Genotypes__: A string representing the genotypes of the sample in the followig order: `dhps_431`, `dhps_437`, `dhps_540`, `dhps_581`, `dhfr_51`, `dhfr_59` and `dhfr_108`.
+- __Freq__: The frequency of genotypes within its sample. (This refers theoretical proportions of strains in the mixes; in practice, it differs).
+- __Parasitaemia__: Parasitaemia level associated with the sample in parasites/uL.
+
 
 ## Usage
 
@@ -34,8 +59,6 @@ plotMetricsGrid(result_data_FINAL_all_parasitaemias, "All_Parasitaemias", save_p
 
 ## Results
 
-The script also compares metrics between FreqEstimationModel and FapR based on parasitaemia, utilizing various minimum allele frequency (MAF) cutoffs. Accuracy, precision, recall, and F1 score assess the phasing of haplotypes (presence/absence), whereas root mean square error (RMSE) and mean absolute percentage error (MAPE) gauge the error in frequency relative to the expected values*, the later taking into account the sample size.
-
 ### FreqEstimationModel Metrics Plot
 ![EstimationModel Metrics Plot](https://github.com/manuelgug/phasing_benchmarking/blob/main/results/benchmark_FEM_metrics_plot.png)
 
@@ -45,5 +68,3 @@ The script also compares metrics between FreqEstimationModel and FapR based on p
 ### Overall comparison across parasitaemias
 ![Overall comparison across parasitaemias](https://github.com/manuelgug/phasing_benchmarking/blob/main/results/benchmarking_parasitaemiaALL_parasitaemias.png)
 
-## Notes
-*This refers theoretical proportions of strains in the mixes. In practice, it tends to differ.
