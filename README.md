@@ -2,7 +2,7 @@
 
 ## Overview
 
-This R script benchmarks the performance of [FapR](https://github.com/manuelgug/FapR) and [Aimee Taylor's FreqEstimationModel](https://github.com/aimeertaylor/FreqEstimationModel/) for phasing 7 loci across the `dhfr` and `dhps` genes from *Plasmodium falciparum*. The benchmarking process involves comparing the results of each method against expected control data.
+This R script benchmarks the performance of [FapR](https://github.com/manuelgug/FapR) and [Aimee Taylor's FreqEstimationModel](https://github.com/aimeertaylor/FreqEstimationModel/) for phasing 7 loci across the `dhfr` and `dhps` genes from *Plasmodium falciparum*. The benchmarking process involves comparing the results of each method against an expected control dataset.
 
 ### Steps
 
@@ -21,7 +21,7 @@ The benchmarking is done across minor allele frequency (MAF) thresholds ranging 
 
 ### Expected Dataset Description
 
-The expected dataset is a 4-column Excel file containing 100 single and 95 mixed controls including `3D7`, `HB3`, `DD2`, `D10`, `D6`, `FCR3`, `U659`, `V1S` and `W2` strains with different genotypes, frequencies, and parasitaemia levels:
+The [expected control dataset](https://github.com/manuelgug/phasing_benchmarking/blob/main/inputs/controls_EXPECTED.xlsx) is a 4-column Excel file containing 100 single and 95 mixed controls including `3D7`, `HB3`, `DD2`, `D10`, `D6`, `FCR3`, `U659`, `V1S` and `W2` strains with different genotypes, frequencies, and parasitaemia levels:
 
 - __SampleID__: Unique identifier for each control.
 - __Genotypes__: A string representing the genotypes of the sample in the followig order: `dhps_431`, `dhps_437`, `dhps_540`, `dhps_581`, `dhfr_51`, `dhfr_59` and `dhfr_108`.
