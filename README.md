@@ -2,7 +2,7 @@
 
 ## Overview
 
-This R script benchmarks the performance of [FapR](https://github.com/manuelgug/FapR) and [Aimee Taylor's FreqEstimationModel](https://github.com/aimeertaylor/FreqEstimationModel/) for phasing 7 loci across the dhfr and dhps genes of *Plasmodium falciparum*. The benchmarking process involves comparing the results of each method against expected control data.
+This R script benchmarks the performance of [FapR](https://github.com/manuelgug/FapR) and [Aimee Taylor's FreqEstimationModel](https://github.com/aimeertaylor/FreqEstimationModel/) for phasing 7 loci across the `dhfr` and `dhps` genes from *Plasmodium falciparum*. The benchmarking process involves comparing the results of each method against expected control data.
 
 ### Steps
 
