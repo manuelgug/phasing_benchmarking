@@ -8,9 +8,6 @@ library(dplyr)
 ### EXPECTED CONTROL DATA (only used to label de plots; filtering happening in the MAF step)----
 expected <- readxl::read_xlsx("inputs/controls_EXPECTED.xlsx")
 
-#keep polyclonal controls only (remove rows with haplo freq of 1, meaning mnoclonal)
-expected <- expected[expected$freq < 1,]
-
 
 
 ### FEM -----
@@ -95,6 +92,12 @@ if (biallelic_benchmark == TRUE){
 }
 
 
+### keep polyclonal controls only (remove rows with haplo freq of 1, meaning mnoclonal) ------
+expected <- expected[expected$freq < 1,]
+FEM_mixes <- FEM_mixes[FEM_mixes$freq < 1,]
+FAPR_mixes <- FAPR_mixes[FAPR_mixes$freq < 1,]
+
+
 ############################################
 ### MAIN FUNCTION-------------------------------------------------------------------
 
@@ -107,7 +110,7 @@ compareMethods <- function(FAPR_mixes, FEM_mixes, expected_mixes) {
   for (freq_threshold in seq(0, 0.4, 0.01)) {
     FAPR_mixes_threshold <- FAPR_mixes[FAPR_mixes$freq > freq_threshold, ]
     FEM_mixes_threshold <- FEM_mixes[FEM_mixes$freq > freq_threshold, ]
-    expected_mixes_threshold <- expected_mixes[expected_mixes$freq > 0.02, ] #EMPIRICAL LIMIT OF DETECTION IN LAB is 0.02 !!! CHANGE AS FIT
+    expected_mixes_threshold <- expected_mixes[expected_mixes$freq > freq_threshold, ] #EMPIRICAL LIMIT OF DETECTION IN LAB is 0.02 !!! CHANGE AS FIT
     
     ############################################
     # COMPARE PRESENCE OF HAPLOS
@@ -204,54 +207,48 @@ compareMethods <- function(FAPR_mixes, FEM_mixes, expected_mixes) {
 ###----------------------------------------------------------------------------
 
 #########################################################
-# Run comparisons with each parasitaemia and all parasitaemias as a whole
+# Run comparisons with each coi and all cois as a whole
 
 #all
-result_data_FINAL_all_parasitaemias <- compareMethods(FAPR_mixes, FEM_mixes, expected_mixes)
+result_data_FINAL_all_cois <- compareMethods(FAPR_mixes, FEM_mixes, expected_mixes)
 
 #parasitamias separatedly
-result_data_FINAL_all_parasitaemias_separatedly <- list()
+result_data_FINAL_all_cois_separatedly <- list()
 
-for (parasitaemia in unique(expected_mixes$parasitaemia)){
+for (coi in unique(expected_mixes$coi)){
   
-  parasitaemia_subset <- expected_mixes[expected_mixes$parasitaemia == parasitaemia,]$SampleID
+  coi_subset <- expected_mixes[expected_mixes$coi == coi,]$SampleID
   
-  expected_mixes_parasitaemia_subset <- expected_mixes[expected_mixes$SampleID %in% parasitaemia_subset, ]
+  expected_mixes_coi_subset <- expected_mixes[expected_mixes$SampleID %in% coi_subset, ]
   
-  FAPR_mixes_parasitaemia_subset <- FAPR_mixes[FAPR_mixes$SampleID %in% parasitaemia_subset, ]
-  FEM_mixes_parasitaemia_subset <- FEM_mixes[FEM_mixes$SampleID %in% parasitaemia_subset, ]
+  FAPR_mixes_coi_subset <- FAPR_mixes[FAPR_mixes$SampleID %in% coi_subset, ]
+  FEM_mixes_coi_subset <- FEM_mixes[FEM_mixes$SampleID %in% coi_subset, ]
   
-  result_data <- compareMethods(FAPR_mixes_parasitaemia_subset, FEM_mixes_parasitaemia_subset, expected_mixes_parasitaemia_subset)
+  result_data <- compareMethods(FAPR_mixes_coi_subset, FEM_mixes_coi_subset, expected_mixes_coi_subset)
   
-  # Store the result_data in the list with the name as parasitaemia
-  result_data_FINAL_all_parasitaemias_separatedly[[as.character(parasitaemia)]] <- result_data
+  # Store the result_data in the list with the name as coi
+  result_data_FINAL_all_cois_separatedly[[as.character(coi)]] <- result_data
 }
 
 #add the all parasitamias df to the list
-result_data_FINAL_all_parasitaemias_separatedly[["ALL_parasitaemias"]] <- result_data_FINAL_all_parasitaemias
+result_data_FINAL_all_cois_separatedly[["ALL_cois"]] <- result_data_FINAL_all_cois
 
 
 ##################################################################3
 
 # PLOTS
-for (df in 1:length(result_data_FINAL_all_parasitaemias_separatedly)){
-  
-  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]), save_plot = FALSE)
-  
-}
 
+#add coi column
+for (df in 1:length(result_data_FINAL_all_cois_separatedly)){
 
-#add parasitaemia column
-for (df in 1:length(result_data_FINAL_all_parasitaemias_separatedly)){
-
-  result_data_FINAL_all_parasitaemias_separatedly[[df]]$parasitaemia <- names(result_data_FINAL_all_parasitaemias_separatedly[df])
+  result_data_FINAL_all_cois_separatedly[[df]]$coi <- names(result_data_FINAL_all_cois_separatedly[df])
   
 }
 
 # Filter data frames in the list for FEM and FapR
-filtered_data_FEM <- lapply(result_data_FINAL_all_parasitaemias_separatedly, function(df) df[df$Method == "FEM", ])
+filtered_data_FEM <- lapply(result_data_FINAL_all_cois_separatedly, function(df) df[df$Method == "FEM", ])
 filtered_data_FEM <- do.call(rbind, filtered_data_FEM)
-filtered_data_FAPR <- lapply(result_data_FINAL_all_parasitaemias_separatedly, function(df) df[df$Method == "FapR", ])
+filtered_data_FAPR <- lapply(result_data_FINAL_all_cois_separatedly, function(df) df[df$Method == "FapR", ])
 filtered_data_FAPR <- do.call(rbind, filtered_data_FAPR)
 
 
@@ -262,9 +259,9 @@ metrics <- c("Accuracy", "Precision", "Recall", "F1_Score", "RMSE", "MAPE")
 fig <- grid.arrange(
   arrangeGrob(
     grobs = lapply(metrics, function(metric) {
-      p <- ggplot(filtered_data_FEM, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
+      p <- ggplot(filtered_data_FEM, aes(x = MAF, y = .data[[metric]], color = factor(coi))) +
         geom_point() +
-        geom_line(aes(group = interaction(Method, parasitaemia))) +
+        geom_line(aes(group = interaction(Method, coi))) +
         labs(title = metric, x = "MAF", y = metric) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
@@ -288,9 +285,9 @@ ggsave("benchmark_FEM_metrics_plot.png", fig, width = 20, height = 12)
 fig <- grid.arrange(
   arrangeGrob(
     grobs = lapply(metrics, function(metric) {
-      p <- ggplot(filtered_data_FAPR, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
+      p <- ggplot(filtered_data_FAPR, aes(x = MAF, y = .data[[metric]], color = factor(coi))) +
         geom_point() +
-        geom_line(aes(group = interaction(Method, parasitaemia))) +
+        geom_line(aes(group = interaction(Method, coi))) +
         labs(title = metric, x = "MAF", y = metric) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
