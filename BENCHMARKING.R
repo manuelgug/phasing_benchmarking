@@ -8,6 +8,10 @@ library(dplyr)
 ### EXPECTED CONTROL DATA ----
 expected <- readxl::read_xlsx("inputs/controls_EXPECTED.xlsx")
 
+#keep polyclonal controls only
+expected <- expected[expected$coi > 1,]
+
+
 ### FEM -----
 FEM <- read.csv("run_FreqEstimationModel/controls_phased_haplotypes_FEM.csv")
 colnames(FEM)<- c("SampleID", "genotypes_FEM", "freq_FEM")
@@ -49,7 +53,7 @@ FEM <- ok
 
 ### FAPR ----
 
-FAPR <- read.csv("run_FapR/controls_fapr_phased_haplos.csv")
+FAPR <- read.csv("run_FapR/phased_haplos_relabun_adjusted.csv")
 FAPR <- FAPR[,c("SampleID", "haplotype", "HAPLO_FREQ_RECALC")]
 colnames(FAPR)<- c("SampleID", "genotypes_FAPR", "freq_FAPR")
 
@@ -386,4 +390,5 @@ fig <- grid.arrange(
 )
 
 
-ggsave("benchmark_FAPR_metrics_plot.png", fig, width = 20, height = 12)
+ggsave("benchmark_FAPR_metrics_plot_relabund_adjusted.png", fig, width = 20, height = 12)
+
