@@ -93,9 +93,13 @@ if (biallelic_benchmark == TRUE){
 
 
 ### keep polyclonal controls only (remove rows with haplo freq of 1, meaning mnoclonal) ------
-expected <- expected[expected$freq < 1,]
-FEM_mixes <- FEM_mixes[FEM_mixes$freq < 1,]
-FAPR_mixes <- FAPR_mixes[FAPR_mixes$freq < 1,]
+polyclonal_controls  <- unique(expected[expected$freq < 1,]$SampleID)
+
+expected <- expected[expected$SampleID %in% polyclonal_controls,]
+
+FEM_mixes <- FEM_mixes[FEM_mixes$SampleID %in% polyclonal_controls,]
+FAPR_mixes <- FAPR_mixes[FAPR_mixes$SampleID %in% polyclonal_controls,]
+
 
 
 ############################################
@@ -108,6 +112,9 @@ compareMethods <- function(FAPR_mixes, FEM_mixes, expected_mixes) {
   #filter out samples given a freq threshold (results will reflect a range of MAF thresholds)
   
   for (freq_threshold in seq(0, 0.4, 0.01)) {
+    
+    #freq_threshold <- 0.1
+    
     FAPR_mixes_threshold <- FAPR_mixes[FAPR_mixes$freq > freq_threshold, ]
     FEM_mixes_threshold <- FEM_mixes[FEM_mixes$freq > freq_threshold, ]
     expected_mixes_threshold <- expected_mixes[expected_mixes$freq > 0, ] #EMPIRICAL LIMIT OF DETECTION IN LAB is 0.02 !!! CHANGE AS FIT
@@ -127,7 +134,9 @@ compareMethods <- function(FAPR_mixes, FEM_mixes, expected_mixes) {
     merged_fapr_ <- data.frame()
     merged_fem_ <- data.frame()
     
-    for (sample in unique(expected_mixes_threshold$SampleID)){ #quitar nnúmero entre []
+    for (sample in unique(expected_mixes_threshold$SampleID)){ 
+      
+      #sample <- unique(expected_mixes_threshold$SampleID)[23]
       
       expected_chunk <- expected_mixes_threshold[expected_mixes_threshold$SampleID == sample,]
       
