@@ -8,9 +8,8 @@ library(dplyr)
 ### EXPECTED CONTROL DATA ----
 expected <- readxl::read_xlsx("inputs/controls_EXPECTED.xlsx")
 
-#keep polyclonal controls only
-expected <- expected[expected$coi > 1,]
-
+#keep polyclonal controls only (remove rows with haplo freq of 1, meaning mnoclonal)
+expected <- expected[expected$freq < 1,]
 
 ### FEM -----
 FEM <- read.csv("run_FreqEstimationModel/controls_phased_haplotypes_FEM.csv")
