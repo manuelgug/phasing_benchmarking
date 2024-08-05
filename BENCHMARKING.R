@@ -5,10 +5,10 @@ library(dplyr)
 #################################################
 # IMPORT DATA
 
-### EXPECTED CONTROL DATA
+### EXPECTED CONTROL DATA ----
 expected <- readxl::read_xlsx("inputs/controls_EXPECTED.xlsx")
 
-### FEM
+### FEM -----
 FEM <- read.csv("run_FreqEstimationModel/controls_phased_haplotypes_FEM.csv")
 colnames(FEM)<- c("SampleID", "genotypes_FEM", "freq_FEM")
 
@@ -45,13 +45,16 @@ for (row in 1:length(FEM$SampleID)){
 
 FEM <- ok
 
-### FAPR
+
+
+### FAPR ----
+
 FAPR <- read.csv("run_FapR/controls_fapr_phased_haplos.csv")
 FAPR <- FAPR[,c("SampleID", "haplotype", "HAPLO_FREQ_RECALC")]
 colnames(FAPR)<- c("SampleID", "genotypes_FAPR", "freq_FAPR")
 
 ##########################################
-# remove monoclonal samples from all dfs
+# remove monoclonal samples from all dfs?
 
 biallelic_benchmark <- FALSE #PUT_BOOLEAN_HERE
 
@@ -333,19 +336,23 @@ filtered_data_FEM <- do.call(rbind, filtered_data_FEM)
 filtered_data_FAPR <- lapply(result_data_FINAL_all_parasitaemias_separatedly, function(df) df[df$Method == "FapR", ])
 filtered_data_FAPR <- do.call(rbind, filtered_data_FAPR)
 
-# List of metrics
-metrics <- c("Accuracy", "Precision", "Recall", "F1_Score", "RMSE", "MAPE")
-
 # Create a 6-panel figure
 fig <- grid.arrange(
   arrangeGrob(
     grobs = lapply(metrics, function(metric) {
-      ggplot(filtered_data_FEM, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
+      p <- ggplot(filtered_data_FEM, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
         geom_point() +
         geom_line(aes(group = interaction(Method, parasitaemia))) +
         labs(title = metric, x = "MAF", y = metric) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+      
+      # Add ylim(0, 1) for the first 5 metrics
+      if (metric %in% metrics[1:5]) {
+        p <- p + ylim(0, 1)
+      }
+      
+      p
     }),
     ncol = 3
   ),
@@ -355,19 +362,28 @@ fig <- grid.arrange(
 ggsave("benchmark_FEM_metrics_plot.png", fig, width = 20, height = 12)
 
 
+# Create a 6-panel figure
 fig <- grid.arrange(
   arrangeGrob(
     grobs = lapply(metrics, function(metric) {
-      ggplot(filtered_data_FAPR, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
+      p <- ggplot(filtered_data_FAPR, aes(x = MAF, y = .data[[metric]], color = factor(parasitaemia))) +
         geom_point() +
         geom_line(aes(group = interaction(Method, parasitaemia))) +
         labs(title = metric, x = "MAF", y = metric) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+      
+      # Add ylim(0, 1) for the first 5 metrics
+      if (metric %in% metrics[1:5]) {
+        p <- p + ylim(0, 1)
+      }
+      
+      p
     }),
     ncol = 3
   ),
-  top = "FAPR"
+  top = "FapR"
 )
+
 
 ggsave("benchmark_FAPR_metrics_plot.png", fig, width = 20, height = 12)
