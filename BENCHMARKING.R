@@ -5,11 +5,13 @@ library(dplyr)
 #################################################
 # IMPORT DATA
 
-### EXPECTED CONTROL DATA ----
+### EXPECTED CONTROL DATA (only used to label de plots; filtering happening in the MAF step)----
 expected <- readxl::read_xlsx("inputs/controls_EXPECTED.xlsx")
 
 #keep polyclonal controls only (remove rows with haplo freq of 1, meaning mnoclonal)
 expected <- expected[expected$freq < 1,]
+
+
 
 ### FEM -----
 FEM <- read.csv("run_FreqEstimationModel/controls_phased_haplotypes_FEM.csv")
@@ -105,7 +107,7 @@ compareMethods <- function(FAPR_mixes, FEM_mixes, expected_mixes) {
   for (freq_threshold in seq(0, 0.4, 0.01)) {
     FAPR_mixes_threshold <- FAPR_mixes[FAPR_mixes$freq > freq_threshold, ]
     FEM_mixes_threshold <- FEM_mixes[FEM_mixes$freq > freq_threshold, ]
-    expected_mixes_threshold <- expected_mixes[expected_mixes$freq > 0.02, ] #EMPIRICAL LIMIT OF DETECTION IN LAB !!! CHANGE AS FIT
+    expected_mixes_threshold <- expected_mixes[expected_mixes$freq > 0.02, ] #EMPIRICAL LIMIT OF DETECTION IN LAB is 0.02 !!! CHANGE AS FIT
     
     ############################################
     # COMPARE PRESENCE OF HAPLOS
@@ -230,98 +232,11 @@ result_data_FINAL_all_parasitaemias_separatedly[["ALL_parasitaemias"]] <- result
 
 
 ##################################################################3
-#### PLOT FUNCTION------------------------------------------------------------------
 
-plotMetricsGrid <- function(result_data_FINAL_all_parasitaemias, plot_title, save_plot) {
-  # Convert MAF to a factor for better plotting
-  result_data_FINAL_all_parasitaemias$MAF <- factor(result_data_FINAL_all_parasitaemias$MAF)
-  
-  # Plot accuracy
-  accuracy_plot <- ggplot(result_data_FINAL_all_parasitaemias, aes(x = MAF, y = Accuracy, color = Method)) +
-    geom_point() +
-    geom_line(aes(group = Method)) +
-    labs(title = "Accuracy",
-         x = "MAF",
-         y = "Accuracy") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    ylim(0, 1)
-  
-  # Plot precision
-  precision_plot <- ggplot(result_data_FINAL_all_parasitaemias, aes(x = MAF, y = Precision, color = Method)) +
-    geom_point() +
-    geom_line(aes(group = Method)) +
-    labs(title = "Precision",
-         x = "MAF",
-         y = "Precision") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    ylim(0, 1)
-  
-  # Plot recall
-  recall_plot <- ggplot(result_data_FINAL_all_parasitaemias, aes(x = MAF, y = Recall, color = Method)) +
-    geom_point() +
-    geom_line(aes(group = Method)) +
-    labs(title = "Recall",
-         x = "MAF",
-         y = "Recall") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    ylim(0, 1)
-  
-  # Plot F1 Score
-  f1_plot <- ggplot(result_data_FINAL_all_parasitaemias, aes(x = MAF, y = F1_Score, color = Method)) +
-    geom_point() +
-    geom_line(aes(group = Method)) +
-    labs(title = "F1 Score",
-         x = "MAF",
-         y = "F1 Score") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    ylim(0, 1)
-  
-  # RMSE of freq
-  rmse_plot <- ggplot(result_data_FINAL_all_parasitaemias, aes(x = MAF, y = RMSE, color = Method)) +
-    geom_point() +
-    geom_line(aes(group = Method)) +
-    labs(title = "RMSE of freq",
-         x = "MAF",
-         y = "RMSE") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    ylim(0, 1)
-  
-  # MAPE of freq
-  mape_plot <- ggplot(result_data_FINAL_all_parasitaemias, aes(x = MAF, y = MAPE, color = Method)) +
-    geom_point() +
-    geom_line(aes(group = Method)) +
-    labs(title = "MAPE of freq",
-         x = "MAF",
-         y = "MAPE") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-  
-  # plot
-  if (save_plot == TRUE){
-    # Save the grid plot
-    ggsave(
-      paste0("benchmarking_parasitaemia", plot_title, ".png"),
-      arrangeGrob(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, mape_plot, ncol = 3, top = paste("Parasitaemia =", plot_title)),
-      width = 20, 
-      height = 12,
-      dpi = 300 
-    )
-  }else{
-    grid.arrange(accuracy_plot, precision_plot, recall_plot, f1_plot, rmse_plot, mape_plot, ncol = 3, top = paste("Parasitaemia =", plot_title))
-  }
-}
-####----------------------------------------------------------------------------------------
-
-###################
 # PLOTS
 for (df in 1:length(result_data_FINAL_all_parasitaemias_separatedly)){
   
-  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]), save_plot = TRUE)
+  plotMetricsGrid(result_data_FINAL_all_parasitaemias_separatedly[[df]], names(result_data_FINAL_all_parasitaemias_separatedly[df]), save_plot = FALSE)
   
 }
 
@@ -338,6 +253,10 @@ filtered_data_FEM <- lapply(result_data_FINAL_all_parasitaemias_separatedly, fun
 filtered_data_FEM <- do.call(rbind, filtered_data_FEM)
 filtered_data_FAPR <- lapply(result_data_FINAL_all_parasitaemias_separatedly, function(df) df[df$Method == "FapR", ])
 filtered_data_FAPR <- do.call(rbind, filtered_data_FAPR)
+
+
+metrics <- c("Accuracy", "Precision", "Recall", "F1_Score", "RMSE", "MAPE")
+
 
 # Create a 6-panel figure
 fig <- grid.arrange(
